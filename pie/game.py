@@ -1,8 +1,43 @@
 import sys
-import os
+import random
 import pygame
 import math
-from pie import Pie
+from pygame.font import Font
+from piece import Piece
+
+def K_Index(index):
+    if index==0:
+        return pygame.K_1
+    elif index==1:
+        return pygame.K_2
+    elif index == 2:
+        return pygame.K_3
+    elif index == 2:
+        return pygame.K_3
+    elif index == 3:
+        return pygame.K_4
+    elif index == 4:
+        return pygame.K_5
+    elif index == 5:
+        return pygame.K_6
+    elif index == 6:
+        return pygame.K_7
+    elif index == 7:
+        return pygame.K_8
+    elif index == 8:
+        return pygame.K_9
+
+def draw_index(screen, index, centerx, centery, radius, startAngle, stopAngle, color):
+    font = Font(None, 30)
+    fontTextImage = font.render(str(index), True, color)
+    fontTextPosition = (centerx + (radius / 2) * math.cos((startAngle + stopAngle) / 2),
+                        centery - (radius / 2) * math.sin((startAngle + stopAngle) / 2))
+    screen.blit(fontTextImage, fontTextPosition)
+
+def get_start_stop_angles(index, numberPieces):
+    startAngle = math.radians(index * (360 / numberPieces))
+    stopAngle = math.radians((index + 1) * (360 / numberPieces))
+    return startAngle, stopAngle
 
 def run_game():
     pygame.init()
@@ -11,65 +46,39 @@ def run_game():
     pygame.display.set_caption("Pie Game")
     centerx = 400
     centery = 300
-    length = 300
+    radius = 200
     pie_color = (200, 200, 0)
     bg_color = (0, 0, 200)
-    width=5
-    pie1=Pie(1, screen, centerx-length/2, centery-length/2,
-             length, pie_color,
-             math.radians(0), math.radians(90),
-             width)
-    pie2=Pie(2, screen, centerx-length/2, centery-length/2,
-             length, pie_color,
-             math.radians(90), math.radians(180),
-             width)
-    pie3=Pie(3, screen, centerx-length/2, centery-length/2,
-             length, pie_color,
-             math.radians(180), math.radians(270),
-             width)
-    pie4=Pie(4, screen, centerx-length/2, centery-length/2,
-             length, pie_color,
-             math.radians(270), math.radians(360),
-             width)
+    lineWidth=5
 
-    drawPie1=False
-    drawPie2=False
-    drawPie3=False
-    drawPie4=False
-
+    numberPieces=9
+    pieces=[]
+    drawPieces = []
+    for index in range(numberPieces):
+        startAngle, stopAngle = get_start_stop_angles(index, numberPieces)
+        piece=Piece(screen, centerx, centery, radius, startAngle, stopAngle, lineWidth)
+        pieces.append(piece)
+        drawPieces.append(False)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
-                    drawPie1=True
-                elif event.key == pygame.K_2:
-                    drawPie2=True
-                elif event.key == pygame.K_3:
-                    drawPie3=True
-                elif event.key == pygame.K_4:
-                    drawPie4=True
+            if event.type == pygame.KEYDOWN:
+                for index in range(numberPieces):
+                    if event.key == K_Index(index):
+                        drawPieces[index]=True
         screen.fill(bg_color)
-        if drawPie1:
-            pie1.draw()
-        if drawPie2:
-            pie2.draw()
-        if drawPie3:
-            pie3.draw()
-        if drawPie4:
-            pie4.draw()
-        if drawPie1 and drawPie2 and drawPie3 and drawPie4:
-            pie1.color=pie2.color=pie3.color=pie4.color=(255, 0, 0)
-            pie1.draw()
-            pie2.draw()
-            pie3.draw()
-            pie4.draw()
-            font=pygame.font.Font(None, 60)
-            fontTextImage=font.render("You Win!", True, (255,255,255))
-            fontTextRect=fontTextImage.get_rect()
-            screen.blit(fontTextImage, (centerx-fontTextRect.width/2,
-                                        centery-fontTextRect.height/2))
+        for index in range(numberPieces):
+            startAngle, stopAngle = get_start_stop_angles(index, numberPieces)
+            draw_index(screen, index+1, centerx, centery, radius, startAngle, stopAngle, pie_color)
+        allDrawed = True
+        for index in range(numberPieces):
+            if drawPieces[index]:
+                pieces[index].draw(pie_color)
+            allDrawed = allDrawed and drawPieces[index]
+        if allDrawed:
+            for piece in pieces:
+                piece.draw((230, 0, 0))
         pygame.display.update()
 
 run_game()
